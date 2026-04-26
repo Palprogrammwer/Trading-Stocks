@@ -7,6 +7,7 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/apple.com",
+    logoDomain: "apple.com",
     sector: "Technology",
     industry: "Consumer Electronics",
     description: "Globaler Technologieanbieter mit starkem Oekosystem aus Hardware, Services und Software."
@@ -19,6 +20,7 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/tesla.com",
+    logoDomain: "tesla.com",
     sector: "Automotive / Energy",
     industry: "Electric Vehicles",
     description: "Wachstumsorientierter Hersteller von Elektrofahrzeugen, Batterien und Energieprodukten."
@@ -31,6 +33,7 @@ const stocks = [
     country: "Deutschland",
     currency: "EUR",
     logo: "https://logo.clearbit.com/sap.com",
+    logoDomain: "sap.com",
     sector: "Enterprise Software",
     industry: "Cloud ERP",
     description: "Europaeischer Softwarekonzern mit Fokus auf ERP, Cloud-Migration und Unternehmensdaten."
@@ -38,11 +41,12 @@ const stocks = [
   {
     ticker: "NVDA",
     name: "NVIDIA Corp.",
-    aliases: ["nvidia", "nvidia corporation"],
+    aliases: ["nvidia", "nvidia corporation", "nvidia corp"],
     exchange: "NASDAQ",
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/nvidia.com",
+    logoDomain: "nvidia.com",
     sector: "Semiconductors",
     industry: "AI Accelerators",
     description: "Halbleiterunternehmen mit fuehrender Position bei GPUs, KI-Beschleunigern und Rechenzentren."
@@ -50,23 +54,25 @@ const stocks = [
   {
     ticker: "MSFT",
     name: "Microsoft Corp.",
-    aliases: ["microsoft", "microsoft corporation"],
+    aliases: ["microsoft", "microsoft corporation", "ms"],
     exchange: "NASDAQ",
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/microsoft.com",
+    logoDomain: "microsoft.com",
     sector: "Technology",
     industry: "Cloud Software",
     description: "Diversifizierter Software- und Cloudanbieter mit starken Plattform- und KI-Geschaeften."
   },
   {
     ticker: "GOOGL",
-    name: "Alphabet Inc. Class A",
-    aliases: ["alphabet", "google"],
+    name: "Alphabet Inc.",
+    aliases: ["alphabet", "google", "alphabet inc"],
     exchange: "NASDAQ",
     country: "USA",
     currency: "USD",
-    logo: "https://logo.clearbit.com/abc.xyz",
+    logo: "https://logo.clearbit.com/google.com",
+    logoDomain: "google.com",
     sector: "Communication Services",
     industry: "Search / Cloud / Ads",
     description: "Digitalplattform mit Suchmaschine, Werbung, YouTube, Cloud und KI-Forschung."
@@ -79,6 +85,7 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/amazon.com",
+    logoDomain: "amazon.com",
     sector: "Consumer / Cloud",
     industry: "E-Commerce / Cloud",
     description: "E-Commerce- und Cloudkonzern mit AWS, Marktplatz, Logistik und Advertising."
@@ -86,16 +93,397 @@ const stocks = [
   {
     ticker: "META",
     name: "Meta Platforms Inc.",
-    aliases: ["meta", "facebook", "instagram"],
+    aliases: ["meta", "facebook", "instagram", "whatsapp"],
     exchange: "NASDAQ",
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/meta.com",
+    logoDomain: "meta.com",
     sector: "Communication Services",
     industry: "Social Platforms",
     description: "Plattformunternehmen mit starken Werbeerlösen, Social Apps und KI-Infrastruktur."
+  },
+  {
+    ticker: "BRK.B",
+    name: "Berkshire Hathaway B",
+    aliases: ["berkshire", "berkshire hathaway", "brk", "buffett"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/berkshirehathaway.com",
+    logoDomain: "berkshirehathaway.com",
+    sector: "Financials",
+    industry: "Conglomerate / Insurance",
+    description: "Diversifiziertes Konglomerat von Warren Buffett mit Versicherungen, Energie und Beteiligungen."
+  },
+  {
+    ticker: "JPM",
+    name: "JPMorgan Chase & Co.",
+    aliases: ["jpmorgan", "jp morgan", "chase", "jpmc"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/jpmorganchase.com",
+    logoDomain: "jpmorganchase.com",
+    sector: "Financials",
+    industry: "Investment Banking",
+    description: "Groesste US-Bank mit Investmentbanking, Retail-Banking und Asset Management."
+  },
+  {
+    ticker: "V",
+    name: "Visa Inc.",
+    aliases: ["visa", "visa inc"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/visa.com",
+    logoDomain: "visa.com",
+    sector: "Financials",
+    industry: "Payment Networks",
+    description: "Globales Zahlungsnetzwerk mit hohen Margen, starkem Moat und Volumenkonjunktur."
+  },
+  {
+    ticker: "MA",
+    name: "Mastercard Inc.",
+    aliases: ["mastercard", "mastercard inc"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/mastercard.com",
+    logoDomain: "mastercard.com",
+    sector: "Financials",
+    industry: "Payment Networks",
+    description: "Globales Zahlungsnetzwerk im Duopol mit Visa, starken Wachstumsmargen und Netzwerkeffekten."
+  },
+  {
+    ticker: "LLY",
+    name: "Eli Lilly and Company",
+    aliases: ["eli lilly", "lilly", "eli lilly and company"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/lilly.com",
+    logoDomain: "lilly.com",
+    sector: "Healthcare",
+    industry: "Pharmaceuticals",
+    description: "Pharmakonzern mit blockbuster-Medikamenten in Diabetes, Adipositas und Onkologie."
+  },
+  {
+    ticker: "UNH",
+    name: "UnitedHealth Group",
+    aliases: ["unitedhealth", "united health", "unh"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/unitedhealthgroup.com",
+    logoDomain: "unitedhealthgroup.com",
+    sector: "Healthcare",
+    industry: "Health Insurance",
+    description: "Groesster US-Krankenversicherer mit diversifiziertem Healthcare-Dienstleistungsportfolio."
+  },
+  {
+    ticker: "JNJ",
+    name: "Johnson & Johnson",
+    aliases: ["johnson", "j&j", "johnson and johnson"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/jnj.com",
+    logoDomain: "jnj.com",
+    sector: "Healthcare",
+    industry: "Pharmaceuticals / MedTech",
+    description: "Diversifizierter Healthcare-Konzern mit Pharma, MedTech und langer Dividendenhistorie."
+  },
+  {
+    ticker: "XOM",
+    name: "Exxon Mobil Corp.",
+    aliases: ["exxon", "exxonmobil", "exxon mobil"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/exxonmobil.com",
+    logoDomain: "exxonmobil.com",
+    sector: "Energy",
+    industry: "Oil & Gas",
+    description: "Groesster westlicher Oel- und Gaskonzern mit globalem Foerderungs- und Raffineriegeschaeft."
+  },
+  {
+    ticker: "WMT",
+    name: "Walmart Inc.",
+    aliases: ["walmart", "wal-mart", "walmart inc"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/walmart.com",
+    logoDomain: "walmart.com",
+    sector: "Consumer Staples",
+    industry: "Retail",
+    description: "Weltgroesster Einzelhaendler mit starkem Omnichannel-Wachstum und Advertising-Geschaeft."
+  },
+  {
+    ticker: "PG",
+    name: "Procter & Gamble Co.",
+    aliases: ["procter gamble", "p&g", "procter and gamble"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/pg.com",
+    logoDomain: "pg.com",
+    sector: "Consumer Staples",
+    industry: "Household Products",
+    description: "Konsumgueterkonzern mit globalen Marken wie Pampers, Gillette, Tide und Oral-B."
+  },
+  {
+    ticker: "ASML",
+    name: "ASML Holding N.V.",
+    aliases: ["asml", "asml holding"],
+    exchange: "NASDAQ",
+    country: "Niederlande",
+    currency: "EUR",
+    logo: "https://logo.clearbit.com/asml.com",
+    logoDomain: "asml.com",
+    sector: "Semiconductors",
+    industry: "Chip Equipment",
+    description: "Weltweiter Monopolist fuer EUV-Lithografiesysteme, unverzichtbar fuer modernste Chips."
+  },
+  {
+    ticker: "BABA",
+    name: "Alibaba Group",
+    aliases: ["alibaba", "alibaba group", "ali"],
+    exchange: "NYSE",
+    country: "China",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/alibaba.com",
+    logoDomain: "alibaba.com",
+    sector: "Consumer / Cloud",
+    industry: "E-Commerce / Cloud",
+    description: "Chinesischer E-Commerce- und Cloudkonzern mit dominanten Marktanteilen in Asien."
+  },
+  {
+    ticker: "TSM",
+    name: "Taiwan Semiconductor",
+    aliases: ["tsmc", "taiwan semiconductor", "taiwan semi"],
+    exchange: "NYSE",
+    country: "Taiwan",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/tsmc.com",
+    logoDomain: "tsmc.com",
+    sector: "Semiconductors",
+    industry: "Foundry",
+    description: "Weltgroesster Auftragsfertiger fuer Halbleiter, produziert fuer Apple, NVIDIA und AMD."
+  },
+  {
+    ticker: "AMD",
+    name: "Advanced Micro Devices",
+    aliases: ["amd", "advanced micro devices"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/amd.com",
+    logoDomain: "amd.com",
+    sector: "Semiconductors",
+    industry: "CPUs / GPUs",
+    description: "Halbleiterhersteller mit wachsender Position in CPUs, GPUs und KI-Beschleunigern."
+  },
+  {
+    ticker: "INTC",
+    name: "Intel Corp.",
+    aliases: ["intel", "intel corporation"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/intel.com",
+    logoDomain: "intel.com",
+    sector: "Semiconductors",
+    industry: "CPUs / Foundry",
+    description: "Traditioneller CPU-Marktfuehrer im Transformationsprozess hin zur eigenen Foundry-Strategie."
+  },
+  {
+    ticker: "NFLX",
+    name: "Netflix Inc.",
+    aliases: ["netflix", "netflix inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/netflix.com",
+    logoDomain: "netflix.com",
+    sector: "Communication Services",
+    industry: "Streaming",
+    description: "Weltgroesste Streaming-Plattform mit Advertising-Tier und globalem Content-Portfolio."
+  },
+  {
+    ticker: "SPOT",
+    name: "Spotify Technology",
+    aliases: ["spotify", "spotify technology"],
+    exchange: "NYSE",
+    country: "Schweden",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/spotify.com",
+    logoDomain: "spotify.com",
+    sector: "Communication Services",
+    industry: "Audio Streaming",
+    description: "Fuehrender Musik- und Podcast-Streamingdienst mit starkem Abo-Wachstum und Margin-Expansion."
+  },
+  {
+    ticker: "PYPL",
+    name: "PayPal Holdings Inc.",
+    aliases: ["paypal", "paypal holdings"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/paypal.com",
+    logoDomain: "paypal.com",
+    sector: "Financials",
+    industry: "Digital Payments",
+    description: "Digitaler Zahlungsanbieter mit Venmo, Braintree und wachsendem Commerce-Geschaeft."
+  },
+  {
+    ticker: "COIN",
+    name: "Coinbase Global Inc.",
+    aliases: ["coinbase", "coinbase global"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/coinbase.com",
+    logoDomain: "coinbase.com",
+    sector: "Financials",
+    industry: "Crypto Exchange",
+    description: "Groesste US-regulierte Kryptobörse mit institutionellem und Retail-Handelsvolumen."
+  },
+  {
+    ticker: "UBER",
+    name: "Uber Technologies Inc.",
+    aliases: ["uber", "uber technologies"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/uber.com",
+    logoDomain: "uber.com",
+    sector: "Technology",
+    industry: "Ride-Sharing / Delivery",
+    description: "Globale Mobilitaetsplattform mit Ridesharing, Lieferdienst und Freight-Geschaeft."
+  },
+  {
+    ticker: "ADBE",
+    name: "Adobe Inc.",
+    aliases: ["adobe", "adobe inc", "photoshop"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/adobe.com",
+    logoDomain: "adobe.com",
+    sector: "Technology",
+    industry: "Creative Software",
+    description: "Kreativsoftware-Konzern mit Photoshop, Acrobat, Firefly-KI und Document-Cloud."
+  },
+  {
+    ticker: "CRM",
+    name: "Salesforce Inc.",
+    aliases: ["salesforce", "salesforce inc", "crm"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/salesforce.com",
+    logoDomain: "salesforce.com",
+    sector: "Technology",
+    industry: "CRM / Cloud",
+    description: "Marktfuehrer im CRM-Segment mit wachsender KI-Agenten-Plattform und Salesforce Einstein."
+  },
+  {
+    ticker: "NOW",
+    name: "ServiceNow Inc.",
+    aliases: ["servicenow", "service now"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/servicenow.com",
+    logoDomain: "servicenow.com",
+    sector: "Technology",
+    industry: "Enterprise Workflow",
+    description: "Enterprise-Workflow-Plattform mit KI-Integration und starker Kundenbindung in Grosskonzernen."
+  },
+  {
+    ticker: "SHOP",
+    name: "Shopify Inc.",
+    aliases: ["shopify", "shopify inc"],
+    exchange: "NYSE",
+    country: "Kanada",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/shopify.com",
+    logoDomain: "shopify.com",
+    sector: "Technology",
+    industry: "E-Commerce Platform",
+    description: "E-Commerce-Plattform fuer KMU und Grosshaendler mit Payments, Logistik und B2B-Expansion."
+  },
+  {
+    ticker: "PLTR",
+    name: "Palantir Technologies",
+    aliases: ["palantir", "palantir technologies"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/palantir.com",
+    logoDomain: "palantir.com",
+    sector: "Technology",
+    industry: "AI / Data Analytics",
+    description: "KI- und Datenanalyseplattform fuer Regierungen und Unternehmen, bekannt fuer AIP-Produkt."
+  },
+  {
+    ticker: "SIE",
+    name: "Siemens AG",
+    aliases: ["siemens", "siemens ag"],
+    exchange: "XETRA",
+    country: "Deutschland",
+    currency: "EUR",
+    logo: "https://logo.clearbit.com/siemens.com",
+    logoDomain: "siemens.com",
+    sector: "Industrials",
+    industry: "Industrial Automation",
+    description: "Diversifizierter Industriekonzern mit Automatisierung, Energie und Infrastruktur."
+  },
+  {
+    ticker: "BAYN",
+    name: "Bayer AG",
+    aliases: ["bayer", "bayer ag"],
+    exchange: "XETRA",
+    country: "Deutschland",
+    currency: "EUR",
+    logo: "https://logo.clearbit.com/bayer.com",
+    logoDomain: "bayer.com",
+    sector: "Healthcare",
+    industry: "Pharma / Agro",
+    description: "Pharma- und Agrochemiekonzern mit Roundup-Rechtsrisiken und Pipeline in Onkologie."
+  },
+  {
+    ticker: "VOW3",
+    name: "Volkswagen AG",
+    aliases: ["volkswagen", "vw", "volkswagen ag"],
+    exchange: "XETRA",
+    country: "Deutschland",
+    currency: "EUR",
+    logo: "https://logo.clearbit.com/volkswagen.com",
+    logoDomain: "volkswagen.com",
+    sector: "Automotive",
+    industry: "Automobiles",
+    description: "Europas groesster Automobilkonzern mit Brands wie VW, Audi, Porsche und Lamborghini."
+  },
+  {
+    ticker: "BMW",
+    name: "BMW AG",
+    aliases: ["bmw", "bmw ag", "bayerische motoren"],
+    exchange: "XETRA",
+    country: "Deutschland",
+    currency: "EUR",
+    logo: "https://logo.clearbit.com/bmw.com",
+    logoDomain: "bmw.com",
+    sector: "Automotive",
+    industry: "Luxury Automobiles",
+    description: "Premiumautomobilhersteller mit starker E-Mobilitaetsstrategie und globaler Markenstaerke."
   }
 ];
+
+// Chart data lengths per timeframe
+const TIMEFRAME_LENGTHS = { "1W": 7, "1M": 30, "1Y": 252, "MAX": 756 };
 
 function searchStocks(query) {
   const normalized = normalize(query);
@@ -105,7 +493,7 @@ function searchStocks(query) {
     .map((stock) => ({ stock, score: matchScore(stock, normalized) }))
     .filter((result) => result.score > 0)
     .sort((a, b) => b.score - a.score || a.stock.name.localeCompare(b.stock.name))
-    .slice(0, 6)
+    .slice(0, 8)
     .map((result) => createQuote(result.stock));
 }
 
@@ -116,7 +504,8 @@ function findStock(query) {
     || stocks.find((stock) => normalize(stock.name).includes(normalized));
 }
 
-function createQuote(stock) {
+function createQuote(stock, timeframe = "1M") {
+  const length = TIMEFRAME_LENGTHS[timeframe] || 30;
   const price = seededNumber(`${stock.ticker}-price`, stock.currency === "EUR" ? 80 : 95, stock.ticker === "NVDA" ? 920 : 640);
   const change = seededNumber(`${stock.ticker}-change`, -4.6, 5.4);
   const revenueGrowth = seededNumber(`${stock.ticker}-rev`, -2.5, 29);
@@ -145,8 +534,9 @@ function createQuote(stock) {
     analystScore,
     dividendYield: seededNumber(`${stock.ticker}-div`, 0, 3.8),
     debtToEquity: seededNumber(`${stock.ticker}-debt`, 0.08, 2.8),
-    chart: buildChart(stock.ticker, price, 72),
-    analysis
+    chart: buildChart(stock.ticker, price, length, timeframe),
+    timeframe,
+    chartTimeframes: Object.keys(TIMEFRAME_LENGTHS)
   };
 }
 
@@ -170,11 +560,14 @@ function analyze(metrics) {
   };
 }
 
-function buildChart(ticker, price, length) {
+function buildChart(ticker, price, length, timeframe = "1M") {
+  const driftScale = { "1W": 0.1, "1M": 0.5, "1Y": 2.0, "MAX": 4.0 }[timeframe] || 0.5;
+  const noiseScale = { "1W": 0.008, "1M": 0.017, "1Y": 0.022, "MAX": 0.028 }[timeframe] || 0.017;
+
   return Array.from({ length }, (_, index) => {
-    const wave = Math.sin(index / 4) * price * 0.032;
-    const drift = index * seededNumber(`${ticker}-drift`, -0.32, 0.86);
-    const noise = seededNumber(`${ticker}-${index}`, -price * 0.017, price * 0.017);
+    const wave = Math.sin(index / Math.max(4, length / 12)) * price * 0.032;
+    const drift = index * seededNumber(`${ticker}-drift-${timeframe}`, -0.32, 0.86) * driftScale;
+    const noise = seededNumber(`${ticker}-${timeframe}-${index}`, -price * noiseScale, price * noiseScale);
     return Number(Math.max(1, price * 0.78 + wave + drift + noise).toFixed(2));
   });
 }
@@ -205,4 +598,4 @@ function normalize(value) {
   return String(value || "").trim().toLowerCase();
 }
 
-module.exports = { findStock, searchStocks };
+module.exports = { findStock, searchStocks, createQuote, TIMEFRAME_LENGTHS };
