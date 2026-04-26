@@ -17,14 +17,14 @@ function validateUserInput(body, requireName = false) {
     return { error: "Das Passwort muss mindestens 8 Zeichen lang sein." };
   }
 
-  return { user: { name: name || email.split("@")[0], email, plan: "free" } };
+  return { user: { name: name || email.split("@")[0], email, plan: planForEmail(email) } };
 }
 
 function createSessionCookie(user) {
   const payload = Buffer.from(JSON.stringify({
     name: user.name,
     email: user.email,
-    plan: user.plan || "free",
+    plan: user.plan || planForEmail(user.email),
     createdAt: new Date().toISOString()
   })).toString("base64url");
 
@@ -47,10 +47,25 @@ function readSession(req) {
   try {
     const payload = cookie.split("=")[1];
     const user = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    return { name: user.name, email: user.email, plan: user.plan || "free" };
+    return { name: user.name, email: user.email, plan: planForEmail(user.email) };
   } catch {
     return null;
   }
+}
+
+function planForEmail(email) {
+  const normalized = String(email || "").trim().toLowerCase();
+  const configured = String(process.env.PRO_EMAILS || "")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (configured.includes(normalized)) return "pro";
+
+  // Owner fallback for this local project: Paula accounts are Pro by default.
+  if (normalized.split("@")[0]?.includes("paula")) return "pro";
+
+  return "free";
 }
 
 function readJson(req) {
@@ -89,5 +104,6 @@ module.exports = {
   readJson,
   readSession,
   sendJson,
-  validateUserInput
+  validateUserInput,
+  planForEmail
 };
