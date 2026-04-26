@@ -1,5 +1,10 @@
 const COOKIE_NAME = "rd_v2_demo_session";
 
+// Built-in Pro accounts (always Pro, no env variable needed)
+const BUILTIN_PRO_EMAILS = [
+  "paul.aierle@outlook.com"
+];
+
 function validateUserInput(body, requireName = false) {
   const name = String(body.name || "").trim();
   const email = String(body.email || "").trim().toLowerCase();
@@ -55,6 +60,11 @@ function readSession(req) {
 
 function planForEmail(email) {
   const normalized = String(email || "").trim().toLowerCase();
+
+  // Check built-in Pro list first
+  if (BUILTIN_PRO_EMAILS.includes(normalized)) return "pro";
+
+  // Check env-configured Pro emails
   const configured = String(process.env.PRO_EMAILS || "")
     .split(",")
     .map((item) => item.trim().toLowerCase())
@@ -62,7 +72,7 @@ function planForEmail(email) {
 
   if (configured.includes(normalized)) return "pro";
 
-  // Owner fallback for this local project: Paula accounts are Pro by default.
+  // Owner fallback: Paula accounts are Pro by default
   if (normalized.split("@")[0]?.includes("paula")) return "pro";
 
   return "free";
