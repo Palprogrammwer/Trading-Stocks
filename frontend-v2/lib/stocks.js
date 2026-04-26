@@ -7,7 +7,9 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/apple.com",
-    sector: "Technology"
+    sector: "Technology",
+    industry: "Consumer Electronics",
+    description: "Globaler Technologieanbieter mit starkem Oekosystem aus Hardware, Services und Software."
   },
   {
     ticker: "TSLA",
@@ -17,7 +19,9 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/tesla.com",
-    sector: "Automotive / Energy"
+    sector: "Automotive / Energy",
+    industry: "Electric Vehicles",
+    description: "Wachstumsorientierter Hersteller von Elektrofahrzeugen, Batterien und Energieprodukten."
   },
   {
     ticker: "SAP",
@@ -27,7 +31,9 @@ const stocks = [
     country: "Deutschland",
     currency: "EUR",
     logo: "https://logo.clearbit.com/sap.com",
-    sector: "Enterprise Software"
+    sector: "Enterprise Software",
+    industry: "Cloud ERP",
+    description: "Europaeischer Softwarekonzern mit Fokus auf ERP, Cloud-Migration und Unternehmensdaten."
   },
   {
     ticker: "NVDA",
@@ -37,7 +43,9 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/nvidia.com",
-    sector: "Semiconductors"
+    sector: "Semiconductors",
+    industry: "AI Accelerators",
+    description: "Halbleiterunternehmen mit fuehrender Position bei GPUs, KI-Beschleunigern und Rechenzentren."
   },
   {
     ticker: "MSFT",
@@ -47,7 +55,9 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/microsoft.com",
-    sector: "Technology"
+    sector: "Technology",
+    industry: "Cloud Software",
+    description: "Diversifizierter Software- und Cloudanbieter mit starken Plattform- und KI-Geschaeften."
   },
   {
     ticker: "GOOGL",
@@ -57,7 +67,33 @@ const stocks = [
     country: "USA",
     currency: "USD",
     logo: "https://logo.clearbit.com/abc.xyz",
-    sector: "Communication Services"
+    sector: "Communication Services",
+    industry: "Search / Cloud / Ads",
+    description: "Digitalplattform mit Suchmaschine, Werbung, YouTube, Cloud und KI-Forschung."
+  },
+  {
+    ticker: "AMZN",
+    name: "Amazon.com Inc.",
+    aliases: ["amazon", "amazon.com", "aws"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/amazon.com",
+    sector: "Consumer / Cloud",
+    industry: "E-Commerce / Cloud",
+    description: "E-Commerce- und Cloudkonzern mit AWS, Marktplatz, Logistik und Advertising."
+  },
+  {
+    ticker: "META",
+    name: "Meta Platforms Inc.",
+    aliases: ["meta", "facebook", "instagram"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/meta.com",
+    sector: "Communication Services",
+    industry: "Social Platforms",
+    description: "Plattformunternehmen mit starken Werbeerlösen, Social Apps und KI-Infrastruktur."
   }
 ];
 
@@ -68,8 +104,8 @@ function searchStocks(query) {
   return stocks
     .map((stock) => ({ stock, score: matchScore(stock, normalized) }))
     .filter((result) => result.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
+    .sort((a, b) => b.score - a.score || a.stock.name.localeCompare(b.stock.name))
+    .slice(0, 6)
     .map((result) => createQuote(result.stock));
 }
 
@@ -88,7 +124,11 @@ function createQuote(stock) {
   const pe = seededNumber(`${stock.ticker}-pe`, 12, 56);
   const volatility = seededNumber(`${stock.ticker}-vol`, 13, 62);
   const marketCap = seededNumber(`${stock.ticker}-cap`, 65, 3200) * 1_000_000_000;
-  const analysis = analyze({ revenueGrowth, earningsGrowth, pe, volatility, change });
+  const grossMargin = seededNumber(`${stock.ticker}-gross`, 28, 74);
+  const fcfYield = seededNumber(`${stock.ticker}-fcf`, 1.1, 8.8);
+  const beta = seededNumber(`${stock.ticker}-beta`, 0.72, 1.92);
+  const analystScore = seededNumber(`${stock.ticker}-analyst`, 54, 91);
+  const analysis = analyze({ revenueGrowth, earningsGrowth, pe, volatility, change, grossMargin, fcfYield });
 
   return {
     ...stock,
@@ -99,42 +139,54 @@ function createQuote(stock) {
     revenueGrowth,
     earningsGrowth,
     volatility,
-    chart: Array.from({ length: 32 }, (_, index) => {
-      const wave = Math.sin(index / 3) * price * 0.028;
-      const drift = index * seededNumber(`${stock.ticker}-drift`, -0.35, 0.9);
-      const noise = seededNumber(`${stock.ticker}-${index}`, -price * 0.018, price * 0.018);
-      return Number(Math.max(1, price * 0.82 + wave + drift + noise).toFixed(2));
-    }),
+    grossMargin,
+    fcfYield,
+    beta,
+    analystScore,
+    dividendYield: seededNumber(`${stock.ticker}-div`, 0, 3.8),
+    debtToEquity: seededNumber(`${stock.ticker}-debt`, 0.08, 2.8),
+    chart: buildChart(stock.ticker, price, 72),
     analysis
   };
 }
 
 function analyze(metrics) {
-  const growth = clamp(metrics.revenueGrowth * 2 + metrics.earningsGrowth * 1.4);
-  const valuation = clamp(100 - metrics.pe * 1.25);
-  const trend = clamp(52 + metrics.change * 7);
-  const risk = clamp(100 - metrics.volatility * 1.15);
+  const growth = clamp(metrics.revenueGrowth * 1.7 + metrics.earningsGrowth * 1.25 + metrics.grossMargin * 0.18);
+  const valuation = clamp(108 - metrics.pe * 1.18 + metrics.fcfYield * 3.2);
+  const trend = clamp(54 + metrics.change * 6.6);
+  const risk = clamp(100 - metrics.volatility * 1.08);
   const score = clamp(growth * 0.32 + valuation * 0.24 + trend * 0.24 + risk * 0.2);
 
   return {
     score,
-    verdict: score >= 72 ? "Starkes Research-Profil" : score >= 56 ? "Solide, aber selektiv pruefen" : "Gemischtes Profil mit klaren Risiken",
+    verdict: score >= 76 ? "Premium-wuerdiges Research-Profil" : score >= 60 ? "Solide Watchlist-Kandidatin" : "Gemischtes Profil mit Pruefpunkten",
     pillars: { growth, valuation, trend, risk },
     summary: [
-      `Wachstum: Umsatz und Gewinn liefern zusammen ${growth}/100 Punkte.`,
-      `Bewertung: Das KGV ergibt im einfachen Modell ${valuation}/100 Punkte.`,
-      `Trend: Die Tagesbewegung und das Momentum ergeben ${trend}/100 Punkte.`,
+      `Wachstum: Umsatz und Gewinn ergeben zusammen ${growth}/100 Punkte.`,
+      `Bewertung: KGV und Free-Cashflow-Qualitaet fuehren zu ${valuation}/100 Punkten.`,
+      `Trend: Tagesbewegung und Momentum liefern ${trend}/100 Punkte.`,
       `Risiko: Volatilitaet und Stabilitaet ergeben ${risk}/100 Punkte.`
     ]
   };
 }
 
+function buildChart(ticker, price, length) {
+  return Array.from({ length }, (_, index) => {
+    const wave = Math.sin(index / 4) * price * 0.032;
+    const drift = index * seededNumber(`${ticker}-drift`, -0.32, 0.86);
+    const noise = seededNumber(`${ticker}-${index}`, -price * 0.017, price * 0.017);
+    return Number(Math.max(1, price * 0.78 + wave + drift + noise).toFixed(2));
+  });
+}
+
 function matchScore(stock, normalized) {
   if (stock.ticker.toLowerCase() === normalized) return 100;
-  if (stock.ticker.toLowerCase().startsWith(normalized)) return 85;
-  if (normalize(stock.name) === normalized) return 95;
-  if (normalize(stock.name).includes(normalized)) return 75;
-  if (stock.aliases.some((alias) => normalize(alias) === normalized)) return 92;
+  if (stock.ticker.toLowerCase().startsWith(normalized)) return 86;
+  if (normalize(stock.name) === normalized) return 96;
+  if (normalize(stock.name).startsWith(normalized)) return 84;
+  if (normalize(stock.name).includes(normalized)) return 76;
+  if (stock.aliases.some((alias) => normalize(alias) === normalized)) return 94;
+  if (stock.aliases.some((alias) => normalize(alias).startsWith(normalized))) return 82;
   if (stock.aliases.some((alias) => normalize(alias).includes(normalized))) return 70;
   return 0;
 }
