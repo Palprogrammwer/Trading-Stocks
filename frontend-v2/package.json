@@ -1,0 +1,8 @@
+{
+  "name": "trading-research-v2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check api/register.js && node --check api/login.js && node --check api/logout.js && node --check api/me.js && node --check api/search.js && node --check lib/auth.js && node --check lib/stocks.js && node --check app.js"
+  }
+}
