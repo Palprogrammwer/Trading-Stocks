@@ -1,12 +1,16 @@
 const app = document.querySelector("#app");
 const storageKey = "researchdesk_v2_state";
+const planRules = {
+  free: { label: "Free", watchlistLimit: 5, historyLimit: 8, proMetrics: false },
+  pro: { label: "Pro", watchlistLimit: 50, historyLimit: 30, proMetrics: true }
+};
 
 const state = {
   user: null,
   view: "login",
   query: "",
   selectedStock: null,
-  results: [],
+  suggestions: [],
   watchlist: [],
   history: [],
   loading: false,
@@ -16,6 +20,7 @@ const state = {
 const moneyFormatters = new Map();
 const percent = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const compact = new Intl.NumberFormat("de-DE", { notation: "compact", maximumFractionDigits: 1 });
+let autocompleteTimer;
 
 boot();
 
@@ -28,7 +33,7 @@ async function boot() {
       state.view = "dashboard";
     }
   } catch {
-    // Demo fallback: local state keeps the prototype usable without a database.
+    // The app remains usable as a demo if the cookie is not available locally.
   }
   render();
 }
@@ -53,7 +58,7 @@ function authTemplate() {
         </div>
         <form id="auth-form" class="form">
           ${isRegister ? `<label>Name<input name="name" required minlength="2" placeholder="Dein Name" /></label>` : ""}
-          <label>E-Mail<input name="email" type="email" required placeholder="name@example.com" /></label>
+          <label>E-Mail<input name="email" type="email" required placeholder="paula@example.com" /></label>
           <label>Passwort<input name="password" type="password" required minlength="8" placeholder="Mindestens 8 Zeichen" /></label>
           ${state.error ? `<p class="error">${escapeHtml(state.error)}</p>` : ""}
           <button class="primary" type="submit">${state.loading ? "Bitte warten..." : isRegister ? "Registrieren" : "Login"}</button>
@@ -61,10 +66,8 @@ function authTemplate() {
         <button id="switch-auth" class="text-button">${isRegister ? "Schon registriert? Einloggen" : "Noch kein Account? Registrieren"}</button>
       </section>
       <section class="auth-hero">
-        <div class="ticker-row">
-          <span>AAPL</span><span>TSLA</span><span>SAP</span><span>NVDA</span>
-        </div>
-        <h2>Moderne Aktienanalyse ohne Brokerage, Orders oder Echtgeld.</h2>
+        <div class="ticker-row"><span>AAPL</span><span>TSLA</span><span>SAP</span><span>NVDA</span></div>
+        <h2>Aktienresearch mit Premium-Gefuehl, ohne Orders und ohne Echtgeld.</h2>
       </section>
     </main>
   `;
@@ -72,6 +75,7 @@ function authTemplate() {
 
 function dashboardTemplate() {
   const stock = state.selectedStock;
+  const plan = currentPlan();
   return `
     <main class="shell">
       <aside class="sidebar">
@@ -80,12 +84,12 @@ function dashboardTemplate() {
           <a class="active">Dashboard</a>
           <a>Watchlist</a>
           <a>Verlauf</a>
-          <a>Premium</a>
+          <a>Pro</a>
         </nav>
-        <section class="plan-card">
-          <span>Free</span>
-          <strong>Prototype Plan</strong>
-          <small>5 Watchlist-Plätze · Basisanalyse</small>
+        <section class="plan-card ${state.user.plan === "pro" ? "is-pro" : ""}">
+          <span>${plan.label}</span>
+          <strong>${state.user.plan === "pro" ? "Alle Research-Module aktiv" : "Basis Research aktiv"}</strong>
+          <small>${state.watchlist.length}/${plan.watchlistLimit} Watchlist-Plaetze</small>
         </section>
         <section class="user-card">
           <strong>${escapeHtml(state.user.name)}</strong>
@@ -96,53 +100,67 @@ function dashboardTemplate() {
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Equity Research</p>
-            <h1>Aktienanalyse per Firmenname</h1>
+            <p class="eyebrow">Equity Research Terminal</p>
+            <h1>Aktienanalyse per Firmenname oder Ticker</h1>
           </div>
-          <form id="search-form" class="search">
-            <input name="query" value="${escapeHtml(state.query)}" placeholder="Apple, Tesla, SAP oder NVIDIA" autocomplete="off" />
-            <button class="primary" type="submit">${state.loading ? "Suche..." : "Suchen"}</button>
+          <form id="search-form" class="search" autocomplete="off">
+            <div class="search-box">
+              <input id="stock-query" name="query" value="${escapeHtml(state.query)}" placeholder="Apple, Tesla, SAP, NVDA..." />
+              ${state.suggestions.length ? suggestionsTemplate() : ""}
+            </div>
+            <button class="primary" type="submit">${state.loading ? "Suche..." : "Analysieren"}</button>
           </form>
         </header>
         ${state.error ? `<p class="error">${escapeHtml(state.error)}</p>` : ""}
-        ${state.results.length > 1 ? resultsTemplate() : ""}
         <section class="company-panel">
           ${stock ? companyTemplate(stock) : emptyCompanyTemplate()}
         </section>
         <section class="metrics">
-          ${metric("Kurs", stock ? formatMoney(stock.price, stock.currency) : "--", stock ? `${formatSigned(stock.change)} heute` : "Noch keine Suche")}
-          ${metric("Marktkapitalisierung", stock ? compact.format(stock.marketCap) : "--", stock ? stock.exchange : "Mock-Daten")}
+          ${metric("Kurs", stock ? formatMoney(stock.price, stock.currency) : "--", stock ? `${formatSigned(stock.change)} heute` : "Autocomplete aktiv")}
+          ${metric("Market Cap", stock ? compact.format(stock.marketCap) : "--", stock ? `${stock.exchange} / ${stock.country}` : "Mock-Daten")}
           ${metric("KGV", stock ? stock.pe : "--", "Bewertung")}
-          ${metric("Score", stock ? `${stock.analysis.score}/100` : "--", stock?.analysis.verdict || "Analyse")}
+          ${metric("Research Score", stock ? `${stock.analysis.score}/100` : "--", stock?.analysis.verdict || "Gesamturteil")}
         </section>
         <section class="grid">
           <article class="panel chart-panel">
             <div class="panel-head">
-              <div><p class="eyebrow">Chart</p><h2>${escapeHtml(stock?.ticker || "Kursverlauf")}</h2></div>
+              <div><p class="eyebrow">Adaptive Chart</p><h2>${escapeHtml(stock?.ticker || "Kursverlauf")}</h2></div>
               <button id="add-watchlist" class="secondary" ${stock ? "" : "disabled"}>Watchlist</button>
             </div>
-            ${stock ? `<canvas id="chart" width="900" height="320"></canvas>` : emptyState("Nach einer Suche erscheint hier der Chart.")}
+            ${stock ? `<div class="chart-shell"><canvas id="chart"></canvas></div>` : emptyState("Nach einer Suche erscheint hier ein automatisch skalierter Chart.")}
           </article>
           <article class="panel analysis-panel">
             <div class="panel-head"><h2>Analyse</h2><span>${stock?.analysis.verdict || "Noch offen"}</span></div>
             ${stock ? analysisTemplate(stock) : emptyState("Die Analyse bewertet Wachstum, Bewertung, Trend und Risiko.")}
           </article>
           <article class="panel">
-            <div class="panel-head"><h2>Watchlist</h2><span>${state.watchlist.length}/5</span></div>
+            <div class="panel-head"><h2>Watchlist</h2><span>${state.watchlist.length}/${plan.watchlistLimit}</span></div>
             ${state.watchlist.length ? `<div class="list">${state.watchlist.map(listItem).join("")}</div>` : emptyState("Noch keine Aktien gespeichert.")}
           </article>
           <article class="panel">
-            <div class="panel-head"><h2>Verlauf</h2><span>${state.history.length}</span></div>
+            <div class="panel-head"><h2>Verlauf</h2><span>${state.history.length}/${plan.historyLimit}</span></div>
             ${state.history.length ? `<div class="list">${state.history.map(historyItem).join("")}</div>` : emptyState("Deine letzten Suchen erscheinen hier.")}
           </article>
-          <article class="panel premium">
-            <div class="panel-head"><h2>Premium</h2><span>Vorbereitet</span></div>
-            <p>Payment ist bewusst nicht aktiv. Die UI ist vorbereitet für mehr Watchlist-Plätze, mehr Kennzahlen, längere Historie und bessere Charts.</p>
-            <div class="chips"><span>Mehr Kennzahlen</span><span>50 Watchlist-Plätze</span><span>Export</span></div>
+          <article class="panel pro-panel">
+            <div class="panel-head"><h2>Pro Research</h2><span>${state.user.plan === "pro" ? "Aktiv" : "Gesperrt"}</span></div>
+            ${stock ? proTemplate(stock) : proEmptyTemplate()}
           </article>
         </section>
       </section>
     </main>
+  `;
+}
+
+function suggestionsTemplate() {
+  return `
+    <div class="suggestions">
+      ${state.suggestions.map((stock) => `
+        <button type="button" class="suggestion" data-ticker="${escapeHtml(stock.ticker)}">
+          <img src="${escapeHtml(stock.logo)}" alt="" />
+          <span><strong>${escapeHtml(stock.name)}</strong><small>${escapeHtml(stock.ticker)} · ${escapeHtml(stock.exchange)}</small></span>
+        </button>
+      `).join("")}
+    </div>
   `;
 }
 
@@ -153,13 +171,13 @@ function companyTemplate(stock) {
       <div>
         <p class="eyebrow">${escapeHtml(stock.exchange)} · ${escapeHtml(stock.country)}</p>
         <h2>${escapeHtml(stock.name)}</h2>
-        <p>${escapeHtml(stock.ticker)} · ${escapeHtml(stock.sector)}</p>
+        <p>${escapeHtml(stock.ticker)} · ${escapeHtml(stock.sector)} · ${escapeHtml(stock.industry)}</p>
       </div>
     </div>
     <div class="price">
       <span>Aktueller Mock-Kurs</span>
       <strong>${formatMoney(stock.price, stock.currency)}</strong>
-      <em class="${stock.change >= 0 ? "positive" : "negative"}">${formatSigned(stock.change)}</em>
+      <em class="${stock.change >= 0 ? "positive" : "negative"}">${formatSigned(stock.change)} heute</em>
     </div>
   `;
 }
@@ -168,25 +186,9 @@ function emptyCompanyTemplate() {
   return `
     <div>
       <p class="eyebrow">Start</p>
-      <h2>Suche nach einem Firmennamen oder Ticker.</h2>
-      <p>Beispiele: Apple, Tesla, SAP, NVIDIA. Alle Daten sind Mock-Daten mit sauberer API-Struktur.</p>
+      <h2>Tippe einen Namen oder Ticker ein.</h2>
+      <p>Beim Tippen erscheinen Vorschlaege. Beispiele: Apple, Tesla, SAP, NVIDIA, Microsoft.</p>
     </div>
-  `;
-}
-
-function resultsTemplate() {
-  return `
-    <section class="results">
-      <strong>Mehrere Treffer gefunden</strong>
-      <div>
-        ${state.results.map((stock) => `
-          <button class="result" data-ticker="${escapeHtml(stock.ticker)}">
-            <img src="${escapeHtml(stock.logo)}" alt="" />
-            <span>${escapeHtml(stock.name)}<small>${escapeHtml(stock.ticker)} · ${escapeHtml(stock.exchange)}</small></span>
-          </button>
-        `).join("")}
-      </div>
-    </section>
   `;
 }
 
@@ -201,8 +203,39 @@ function analysisTemplate(stock) {
   `;
 }
 
+function proTemplate(stock) {
+  if (state.user.plan !== "pro") {
+    return `
+      <p class="muted">Free-Nutzer sehen Basisdaten. Pro schaltet erweiterte Kennzahlen, groessere Watchlist und detailliertere Signale frei.</p>
+      <div class="locked-grid">
+        <span>Gross Margin</span><span>FCF Yield</span><span>Beta</span><span>Debt / Equity</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="pro-grid">
+      ${proMetric("Gross Margin", `${percent.format(stock.grossMargin)}%`)}
+      ${proMetric("FCF Yield", `${percent.format(stock.fcfYield)}%`)}
+      ${proMetric("Beta", stock.beta)}
+      ${proMetric("Analyst Score", `${percent.format(stock.analystScore)}%`)}
+      ${proMetric("Dividende", `${percent.format(stock.dividendYield)}%`)}
+      ${proMetric("Debt / Equity", stock.debtToEquity)}
+    </div>
+    <p class="muted">${escapeHtml(stock.description)}</p>
+  `;
+}
+
+function proEmptyTemplate() {
+  return `<p class="muted">Dein Paula-Account ist automatisch Pro. Suche eine Aktie, um alle Pro-Kennzahlen zu sehen.</p>`;
+}
+
 function metric(label, value, hint) {
   return `<article class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(hint)}</small></article>`;
+}
+
+function proMetric(label, value) {
+  return `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
 }
 
 function pillar(label, value) {
@@ -230,8 +263,9 @@ function bindEvents() {
   document.querySelector("#auth-form")?.addEventListener("submit", submitAuth);
   document.querySelector("#logout")?.addEventListener("click", logout);
   document.querySelector("#search-form")?.addEventListener("submit", submitSearch);
+  document.querySelector("#stock-query")?.addEventListener("input", handleAutocomplete);
   document.querySelector("#add-watchlist")?.addEventListener("click", addWatchlist);
-  document.querySelectorAll(".result").forEach((button) => button.addEventListener("click", () => selectStock(button.dataset.ticker)));
+  document.querySelectorAll(".suggestion").forEach((button) => button.addEventListener("click", () => chooseSuggestion(button.dataset.ticker)));
   document.querySelectorAll(".stock-open").forEach((button) => button.addEventListener("click", () => searchStock(button.dataset.ticker)));
 }
 
@@ -255,6 +289,33 @@ async function submitAuth(event) {
   }
 }
 
+function handleAutocomplete(event) {
+  const value = event.currentTarget.value.trim();
+  state.query = value;
+  clearTimeout(autocompleteTimer);
+  if (value.length < 1) {
+    state.suggestions = [];
+    render();
+    return;
+  }
+
+  autocompleteTimer = setTimeout(async () => {
+    try {
+      const data = await api(`/api/search?q=${encodeURIComponent(value)}`);
+      state.suggestions = data.results;
+      render();
+      const input = document.querySelector("#stock-query");
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    } catch {
+      state.suggestions = [];
+      render();
+    }
+  }, 160);
+}
+
 async function submitSearch(event) {
   event.preventDefault();
   const query = new FormData(event.currentTarget).get("query");
@@ -268,12 +329,12 @@ async function searchStock(query) {
   render();
   try {
     const data = await api(`/api/search?q=${encodeURIComponent(query)}`);
-    state.results = data.results;
+    state.suggestions = [];
     state.selectedStock = data.results[0];
     addHistory(query, data.results[0]);
     saveLocalState();
   } catch (error) {
-    state.results = [];
+    state.suggestions = [];
     state.selectedStock = null;
     state.error = error.message;
   } finally {
@@ -282,11 +343,13 @@ async function searchStock(query) {
   }
 }
 
-function selectStock(ticker) {
-  const stock = state.results.find((item) => item.ticker === ticker);
+function chooseSuggestion(ticker) {
+  const stock = state.suggestions.find((item) => item.ticker === ticker);
   if (!stock) return;
+  state.query = stock.ticker;
   state.selectedStock = stock;
-  addHistory(ticker, stock);
+  state.suggestions = [];
+  addHistory(stock.ticker, stock);
   saveLocalState();
   render();
 }
@@ -294,8 +357,9 @@ function selectStock(ticker) {
 function addWatchlist() {
   if (!state.selectedStock) return;
   if (state.watchlist.some((item) => item.ticker === state.selectedStock.ticker)) return;
-  if (state.watchlist.length >= 5) {
-    state.error = "Free-Limit erreicht: maximal 5 Watchlist-Einträge.";
+  const plan = currentPlan();
+  if (state.watchlist.length >= plan.watchlistLimit) {
+    state.error = `Free-Limit erreicht: maximal ${plan.watchlistLimit} Watchlist-Eintraege.`;
     render();
     return;
   }
@@ -309,6 +373,7 @@ async function logout() {
   state.user = null;
   state.view = "login";
   state.selectedStock = null;
+  state.suggestions = [];
   state.error = "";
   saveLocalState();
   render();
@@ -328,37 +393,84 @@ async function api(path, options = {}) {
 
 function drawChart(points) {
   const canvas = document.querySelector("#chart");
-  if (!canvas || !points?.length) return;
+  const shell = document.querySelector(".chart-shell");
+  if (!canvas || !shell || !points?.length) return;
+
+  const rect = shell.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  const cssWidth = Math.max(320, rect.width);
+  const cssHeight = Math.max(280, rect.height);
+  canvas.width = Math.floor(cssWidth * ratio);
+  canvas.height = Math.floor(cssHeight * ratio);
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
+
   const ctx = canvas.getContext("2d");
-  const { width, height } = canvas;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  const width = cssWidth;
+  const height = cssHeight;
+  const pad = { top: 20, right: 18, bottom: 34, left: 56 };
   const min = Math.min(...points);
   const max = Math.max(...points);
-  const pad = 24;
+  const range = Math.max(1, max - min);
   ctx.clearRect(0, 0, width, height);
-  ctx.strokeStyle = "rgba(148,163,184,.18)";
-  for (let i = 0; i < 5; i++) {
-    const y = pad + (i * (height - pad * 2)) / 4;
+
+  ctx.fillStyle = "#0d131c";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.strokeStyle = "rgba(148,163,184,.16)";
+  ctx.fillStyle = "rgba(148,163,184,.78)";
+  ctx.font = "12px Inter, system-ui, sans-serif";
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (i * (height - pad.top - pad.bottom)) / 4;
+    const value = max - (i * range) / 4;
     ctx.beginPath();
-    ctx.moveTo(pad, y);
-    ctx.lineTo(width - pad, y);
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
     ctx.stroke();
+    ctx.fillText(value.toFixed(0), 12, y + 4);
   }
-  const gradient = ctx.createLinearGradient(0, 0, width, 0);
-  gradient.addColorStop(0, "#38bdf8");
-  gradient.addColorStop(1, "#22c55e");
-  ctx.strokeStyle = gradient;
-  ctx.lineWidth = 4;
+
+  const coords = points.map((point, index) => ({
+    x: pad.left + index * (width - pad.left - pad.right) / (points.length - 1),
+    y: height - pad.bottom - ((point - min) / range) * (height - pad.top - pad.bottom)
+  }));
+
+  const area = ctx.createLinearGradient(0, pad.top, 0, height - pad.bottom);
+  area.addColorStop(0, "rgba(34,197,94,.26)");
+  area.addColorStop(1, "rgba(56,189,248,.02)");
   ctx.beginPath();
-  points.forEach((point, index) => {
-    const x = pad + index * (width - pad * 2) / (points.length - 1);
-    const y = height - pad - ((point - min) / Math.max(1, max - min)) * (height - pad * 2);
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
+  coords.forEach((point, index) => index === 0 ? ctx.moveTo(point.x, point.y) : ctx.lineTo(point.x, point.y));
+  ctx.lineTo(width - pad.right, height - pad.bottom);
+  ctx.lineTo(pad.left, height - pad.bottom);
+  ctx.closePath();
+  ctx.fillStyle = area;
+  ctx.fill();
+
+  const line = ctx.createLinearGradient(pad.left, 0, width - pad.right, 0);
+  line.addColorStop(0, "#38bdf8");
+  line.addColorStop(1, "#22c55e");
+  ctx.beginPath();
+  coords.forEach((point, index) => index === 0 ? ctx.moveTo(point.x, point.y) : ctx.lineTo(point.x, point.y));
+  ctx.strokeStyle = line;
+  ctx.lineWidth = 3;
   ctx.stroke();
+
+  const last = coords.at(-1);
+  ctx.fillStyle = "#22c55e";
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 4.5, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function addHistory(query, stock) {
-  state.history = [{ query, ticker: stock.ticker, name: stock.name }, ...state.history.filter((item) => item.ticker !== stock.ticker)].slice(0, 8);
+  const limit = currentPlan().historyLimit;
+  state.history = [{ query, ticker: stock.ticker, name: stock.name }, ...state.history.filter((item) => item.ticker !== stock.ticker)].slice(0, limit);
+}
+
+function currentPlan() {
+  return planRules[state.user?.plan === "pro" ? "pro" : "free"];
 }
 
 function loadLocalState() {
