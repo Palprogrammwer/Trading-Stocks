@@ -24,6 +24,7 @@ const moneyFormatters = new Map();
 const percent = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const compact = new Intl.NumberFormat("de-DE", { notation: "compact", maximumFractionDigits: 1 });
 let autocompleteTimer;
+let outsideClickBound = false;
 
 boot();
 
@@ -108,7 +109,7 @@ function dashboardTemplate() {
         <header class="topbar">
           <div>
             <p class="eyebrow">Equity Research Terminal</p>
-            <h1>Aktienanalyse per Firmenname oder Ticker</h1>
+            <h1>Aktienanalyse per Name oder Ticker</h1>
           </div>
           <form id="search-form" class="search" autocomplete="off">
             <div class="search-box">
@@ -117,8 +118,6 @@ function dashboardTemplate() {
                 name="query"
                 value="${escapeHtml(state.query)}"
                 placeholder="Apple, Tesla, SAP, NVDA, Bayer..."
-                aria-label="Aktie suchen"
-                aria-autocomplete="list"
               />
               ${state.suggestions.length ? suggestionsTemplate() : ""}
             </div>
@@ -130,26 +129,24 @@ function dashboardTemplate() {
           ${stock ? companyTemplate(stock) : emptyCompanyTemplate()}
         </section>
         <section class="metrics">
-          ${metric("Kurs", stock ? formatMoney(stock.price, stock.currency) : "--", stock ? `${formatSigned(stock.change)} heute` : "Autocomplete aktiv")}
-          ${metric("Market Cap", stock ? compact.format(stock.marketCap) : "--", stock ? `${stock.exchange} · ${stock.country}` : "Mock-Daten")}
-          ${metric("KGV", stock ? stock.pe : "--", stock ? peLabel(stock.pe) : "Bewertung")}
-          ${metric("Research Score", stock ? `${stock.analysis.score}/100` : "--", stock?.analysis.verdict || "Gesamturteil")}
+          ${metric("Kurs", stock ? formatMoney(stock.price, stock.currency) : "--", stock ? formatSigned(stock.change) + " heute" : "Autocomplete aktiv")}
+          ${metric("Market Cap", stock ? compact.format(stock.marketCap) : "--", stock ? stock.exchange + " · " + stock.country : "Mock-Daten")}
+          ${metric("KGV", stock ? String(stock.pe) : "--", stock ? peLabel(stock.pe) : "Bewertung")}
+          ${metric("Research Score", stock ? stock.analysis.score + "/100" : "--", stock ? stock.analysis.verdict : "Gesamturteil")}
         </section>
         <section class="grid">
           <article class="panel chart-panel">
             <div class="panel-head">
-              <div><p class="eyebrow">Kursverlauf (Mock)</p><h2>${escapeHtml(stock?.ticker || "Chart")}</h2></div>
+              <div><p class="eyebrow">Kursverlauf (Mock)</p><h2>${escapeHtml(stock ? stock.ticker : "Chart")}</h2></div>
               <div class="chart-controls">
-                ${TIMEFRAMES.map((tf) => `
-                  <button type="button" class="timeframe-btn${state.chartTimeframe === tf ? " active" : ""}" data-tf="${tf}" ${stock ? "" : "disabled"}>${tf}</button>
-                `).join("")}
-                <button id="add-watchlist" class="secondary" ${stock ? "" : "disabled"}>+ Watchlist</button>
+                ${TIMEFRAMES.map((tf) => `<button type="button" class="timeframe-btn${state.chartTimeframe === tf ? " active" : ""}" data-tf="${tf}"${stock ? "" : " disabled"}>${tf}</button>`).join("")}
+                <button id="add-watchlist" class="secondary"${stock ? "" : " disabled"}>+ Watchlist</button>
               </div>
             </div>
             ${stock ? `<div class="chart-shell"><canvas id="chart"></canvas></div>` : emptyState("Nach einer Suche erscheint hier ein automatisch skalierter Chart.")}
           </article>
           <article class="panel analysis-panel">
-            <div class="panel-head"><h2>Analyse</h2><span class="verdict-badge ${stock ? verdictClass(stock.analysis.score) : ""}">${stock?.analysis.verdict || "Noch offen"}</span></div>
+            <div class="panel-head"><h2>Analyse</h2><span class="verdict-badge ${stock ? verdictClass(stock.analysis.score) : ""}">${stock ? stock.analysis.verdict : "Noch offen"}</span></div>
             ${stock ? analysisTemplate(stock) : emptyState("Die Analyse bewertet Wachstum, Bewertung, Trend und Risiko.")}
           </article>
           <article class="panel">
@@ -175,15 +172,15 @@ function dashboardTemplate() {
 function suggestionsTemplate() {
   const historyTickers = new Set(state.history.map((h) => h.ticker));
   return `
-    <div class="suggestions" role="listbox">
-      ${state.suggestions.map((stock) => `
-        <button type="button" class="suggestion" data-ticker="${escapeHtml(stock.ticker)}" role="option">
-          ${logoImg(stock, 34)}
+    <div class="suggestions">
+      ${state.suggestions.map((s) => `
+        <button type="button" class="suggestion" data-ticker="${escapeHtml(s.ticker)}">
+          ${logoImg(s, 34)}
           <span>
-            <strong>${escapeHtml(stock.name)}</strong>
-            <small>${escapeHtml(stock.ticker)} · ${escapeHtml(stock.exchange)} · ${escapeHtml(stock.country)}${historyTickers.has(stock.ticker) ? ' · <em class="history-hint">Verlauf</em>' : ""}</small>
+            <strong>${escapeHtml(s.name)}</strong>
+            <small>${escapeHtml(s.ticker)} · ${escapeHtml(s.exchange)} · ${escapeHtml(s.country)}${historyTickers.has(s.ticker) ? " · <em class=\"history-hint\">Verlauf</em>" : ""}</small>
           </span>
-          <em class="sector-chip">${escapeHtml(stock.sector)}</em>
+          <em class="sector-chip">${escapeHtml(s.sector)}</em>
         </button>
       `).join("")}
     </div>
@@ -193,11 +190,11 @@ function suggestionsTemplate() {
 function companyTemplate(stock) {
   return `
     <div class="company">
-      ${logoImg(stock, 78)}
+      ${logoImg(stock, 72)}
       <div>
         <p class="eyebrow">${escapeHtml(stock.exchange)} · ${escapeHtml(stock.country)}</p>
         <h2>${escapeHtml(stock.name)}</h2>
-        <p>${escapeHtml(stock.ticker)} · ${escapeHtml(stock.sector)} · ${escapeHtml(stock.industry)}</p>
+        <p class="company-sub">${escapeHtml(stock.ticker)} · ${escapeHtml(stock.sector)} · ${escapeHtml(stock.industry)}</p>
         <p class="description-text">${escapeHtml(stock.description)}</p>
       </div>
     </div>
@@ -205,21 +202,21 @@ function companyTemplate(stock) {
       <span>Mock-Kurs</span>
       <strong>${formatMoney(stock.price, stock.currency)}</strong>
       <em class="${stock.change >= 0 ? "positive" : "negative"}">${formatSigned(stock.change)} heute</em>
-      <small>Vol: ${compact.format(stock.marketCap * 0.004)}</small>
+      <small>Mkt Cap: ${compact.format(stock.marketCap)}</small>
     </div>
   `;
 }
 
 function logoImg(stock, size) {
   const initial = stock.ticker ? stock.ticker[0] : "?";
-  const src = escapeHtml(stock.logo || `https://logo.clearbit.com/${stock.logoDomain || "example.com"}`);
+  const src = escapeHtml(stock.logo || "");
   return `<img
     src="${src}"
-    alt="${escapeHtml(stock.name)}"
+    alt=""
     width="${size}" height="${size}"
     class="stock-logo"
     onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
-  /><span class="logo-fallback" style="display:none;width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px;">${initial}</span>`;
+  /><span class="logo-fallback" style="display:none;width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px;">${escapeHtml(initial)}</span>`;
 }
 
 function emptyCompanyTemplate() {
@@ -239,14 +236,14 @@ function analysisTemplate(stock) {
     <div class="analysis-header">
       <div class="score ${verdictClass(a.score)}"><strong>${a.score}</strong><span>/100</span></div>
       <div class="signal-list">
-        ${signals.map((s) => `<div class="signal signal-${s.type}"><span>${s.icon}</span>${escapeHtml(s.text)}</div>`).join("")}
+        ${signals.map((s) => `<div class="signal signal-${escapeHtml(s.type)}"><span>${s.icon}</span>${escapeHtml(s.text)}</div>`).join("")}
       </div>
     </div>
     <div class="pillars">
-      ${pillar("Wachstum", a.pillars.growth, "Umsatz- & Gewinnentwicklung")}
-      ${pillar("Bewertung", a.pillars.valuation, "KGV, FCF-Qualitaet")}
+      ${pillar("Wachstum", a.pillars.growth, "Umsatz & Gewinn")}
+      ${pillar("Bewertung", a.pillars.valuation, "KGV, FCF")}
       ${pillar("Trend", a.pillars.trend, "Kurs-Momentum")}
-      ${pillar("Risiko", a.pillars.risk, "Volatilitaet & Stabilitaet")}
+      ${pillar("Risiko", a.pillars.risk, "Volatilitaet")}
     </div>
     <ul class="analysis-summary">
       ${a.summary.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
@@ -257,18 +254,17 @@ function analysisTemplate(stock) {
 function buildSignals(stock) {
   const signals = [];
   const a = stock.analysis;
+  if (a.score >= 76)       signals.push({ type: "positive", icon: "✦", text: "Premium Research-Profil" });
+  else if (a.score >= 60)  signals.push({ type: "neutral",  icon: "◈", text: "Solide Watchlist-Kandidatin" });
+  else                     signals.push({ type: "negative", icon: "▲", text: "Gemischtes Profil – pruefen" });
 
-  if (a.score >= 76) signals.push({ type: "positive", icon: "✦", text: "Premium Research-Profil" });
-  else if (a.score >= 60) signals.push({ type: "neutral", icon: "◈", text: "Solide Watchlist-Kandidatin" });
-  else signals.push({ type: "negative", icon: "▲", text: "Gemischtes Profil – pruefen" });
+  if (stock.change >= 2)        signals.push({ type: "positive", icon: "↑", text: "+" + percent.format(stock.change) + "% Tagesperformance" });
+  else if (stock.change <= -2)  signals.push({ type: "negative", icon: "↓", text: percent.format(stock.change) + "% Tagesperformance" });
 
-  if (stock.change >= 2) signals.push({ type: "positive", icon: "↑", text: `+${percent.format(stock.change)}% Tagesperformance` });
-  else if (stock.change <= -2) signals.push({ type: "negative", icon: "↓", text: `${percent.format(stock.change)}% Tagesperformance` });
-
-  if (a.pillars.valuation >= 70) signals.push({ type: "positive", icon: "◎", text: "Attraktive Bewertung" });
+  if (a.pillars.valuation >= 70)      signals.push({ type: "positive", icon: "◎", text: "Attraktive Bewertung" });
   else if (a.pillars.valuation <= 35) signals.push({ type: "negative", icon: "◎", text: "Hohe Bewertung (KGV)" });
 
-  if (a.pillars.risk >= 65) signals.push({ type: "positive", icon: "⊕", text: "Niedriges Risikoprofil" });
+  if (a.pillars.risk >= 65)      signals.push({ type: "positive", icon: "⊕", text: "Niedriges Risikoprofil" });
   else if (a.pillars.risk <= 30) signals.push({ type: "negative", icon: "⊕", text: "Hohes Risikoprofil" });
 
   return signals.slice(0, 4);
@@ -284,25 +280,19 @@ function proTemplate(stock) {
       </div>
     `;
   }
-
-  const margin = stock.grossMargin;
-  const marginClass = margin >= 50 ? "pro-good" : margin >= 30 ? "" : "pro-warn";
-  const betaClass = stock.beta <= 1.1 ? "pro-good" : stock.beta >= 1.6 ? "pro-warn" : "";
-
+  const m = stock.grossMargin;
   return `
     <div class="pro-grid">
-      ${proMetric("Gross Margin", `${percent.format(margin)}%`, marginClass, margin >= 50 ? "stark" : margin >= 30 ? "mittel" : "schwach")}
-      ${proMetric("FCF Yield", `${percent.format(stock.fcfYield)}%`, stock.fcfYield >= 4 ? "pro-good" : "", "")}
-      ${proMetric("Beta", stock.beta, betaClass, stock.beta <= 1.1 ? "defensiv" : stock.beta >= 1.6 ? "volatil" : "marktnahe")}
-      ${proMetric("Analyst Score", `${percent.format(stock.analystScore)}%`, stock.analystScore >= 75 ? "pro-good" : "", "")}
-      ${proMetric("Dividende", `${percent.format(stock.dividendYield)}%`, "", "")}
-      ${proMetric("Debt / Equity", stock.debtToEquity, stock.debtToEquity <= 0.5 ? "pro-good" : stock.debtToEquity >= 2 ? "pro-warn" : "", "")}
+      ${proMetric("Gross Margin", percent.format(m) + "%", m >= 50 ? "pro-good" : m < 30 ? "pro-warn" : "", m >= 50 ? "stark" : m < 30 ? "schwach" : "")}
+      ${proMetric("FCF Yield",    percent.format(stock.fcfYield) + "%",    stock.fcfYield >= 4 ? "pro-good" : "", "")}
+      ${proMetric("Beta",         String(stock.beta),                      stock.beta <= 1.1 ? "pro-good" : stock.beta >= 1.6 ? "pro-warn" : "", stock.beta <= 1.1 ? "defensiv" : stock.beta >= 1.6 ? "volatil" : "marktnahe")}
+      ${proMetric("Analyst Score",percent.format(stock.analystScore) + "%",stock.analystScore >= 75 ? "pro-good" : "", "")}
+      ${proMetric("Dividende",    percent.format(stock.dividendYield) + "%","", "")}
+      ${proMetric("Debt / Equity",String(stock.debtToEquity),              stock.debtToEquity <= 0.5 ? "pro-good" : stock.debtToEquity >= 2 ? "pro-warn" : "", "")}
     </div>
     <div class="pro-context">
-      <span class="eyebrow">Sektor</span>
-      <strong>${escapeHtml(stock.sector)}</strong>
-      <span class="eyebrow" style="margin-top:8px">Branche</span>
-      <strong>${escapeHtml(stock.industry)}</strong>
+      <span class="eyebrow">Sektor</span><strong>${escapeHtml(stock.sector)}</strong>
+      <span class="eyebrow" style="margin-top:6px">Branche</span><strong>${escapeHtml(stock.industry)}</strong>
     </div>
   `;
 }
@@ -312,7 +302,11 @@ function proEmptyTemplate() {
 }
 
 function metric(label, value, hint) {
-  return `<article class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong><small>${escapeHtml(String(hint))}</small></article>`;
+  return `<article class="metric">
+    <span>${escapeHtml(label)}</span>
+    <strong>${escapeHtml(String(value))}</strong>
+    <small>${escapeHtml(String(hint))}</small>
+  </article>`;
 }
 
 function proMetric(label, value, cssClass, badge) {
@@ -354,8 +348,6 @@ function emptyState(text) {
   return `<div class="empty">${escapeHtml(text)}</div>`;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function verdictClass(score) {
   return score >= 76 ? "verdict-premium" : score >= 60 ? "verdict-solid" : "verdict-mixed";
 }
@@ -375,31 +367,58 @@ function bindEvents() {
     state.error = "";
     render();
   });
+
   document.querySelector("#auth-form")?.addEventListener("submit", submitAuth);
   document.querySelector("#logout")?.addEventListener("click", logout);
-  document.querySelector("#search-form")?.addEventListener("submit", submitSearch);
 
-  const input = document.querySelector("#stock-query");
-  input?.addEventListener("input", handleAutocomplete);
-  input?.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { state.suggestions = []; render(); }
+  // Search form — prevent page reload, call searchStock with input value
+  document.querySelector("#search-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = document.querySelector("#stock-query")?.value?.trim();
+    if (q) searchStock(q);
   });
 
-  document.querySelector("#add-watchlist")?.addEventListener("click", addWatchlist);
-  document.querySelectorAll(".suggestion").forEach((btn) => btn.addEventListener("click", () => chooseSuggestion(btn.dataset.ticker)));
-  document.querySelectorAll(".stock-open").forEach((btn) => btn.addEventListener("click", () => searchStock(btn.dataset.ticker)));
-  document.querySelectorAll(".timeframe-btn").forEach((btn) => btn.addEventListener("click", () => changeTimeframe(btn.dataset.tf)));
+  const input = document.querySelector("#stock-query");
+  if (input) {
+    input.addEventListener("input", handleAutocomplete);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { state.suggestions = []; render(); }
+    });
+  }
 
-  // Close suggestions when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".search-box") && state.suggestions.length) {
-      state.suggestions = [];
-      render();
-    }
-  }, { once: true });
+  document.querySelector("#add-watchlist")?.addEventListener("click", addWatchlist);
+
+  // Suggestion clicks — use mousedown so it fires before input blur
+  document.querySelectorAll(".suggestion").forEach((btn) => {
+    btn.addEventListener("mousedown", (e) => {
+      e.preventDefault(); // prevent input blur that would close dropdown first
+      chooseSuggestion(btn.dataset.ticker);
+    });
+  });
+
+  // Watchlist & history item clicks
+  document.querySelectorAll(".stock-open").forEach((btn) => {
+    btn.addEventListener("click", () => searchStock(btn.dataset.ticker));
+  });
+
+  // Chart timeframe buttons
+  document.querySelectorAll(".timeframe-btn").forEach((btn) => {
+    btn.addEventListener("click", () => changeTimeframe(btn.dataset.tf));
+  });
+
+  // Close suggestions on outside click — persistent, not once
+  if (!outsideClickBound) {
+    outsideClickBound = true;
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-box") && state.suggestions.length) {
+        state.suggestions = [];
+        render();
+      }
+    });
+  }
 }
 
-// ─── Auth actions ─────────────────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
 async function submitAuth(event) {
   event.preventDefault();
@@ -428,6 +447,7 @@ async function logout() {
   state.selectedStock = null;
   state.suggestions = [];
   state.error = "";
+  outsideClickBound = false;
   saveLocalState();
   render();
 }
@@ -442,40 +462,39 @@ function handleAutocomplete(event) {
 
   autocompleteTimer = setTimeout(async () => {
     try {
-      const data = await api(`/api/search?q=${encodeURIComponent(value)}`);
-      // Boost stocks from history to top of suggestions
+      const data = await api("/api/search?q=" + encodeURIComponent(value));
+      // Boost history items to top
       const historyTickers = new Set(state.history.map((h) => h.ticker));
       state.suggestions = [
         ...data.results.filter((s) => historyTickers.has(s.ticker)),
         ...data.results.filter((s) => !historyTickers.has(s.ticker))
       ];
       render();
+      // Restore focus without re-triggering input event
       const input = document.querySelector("#stock-query");
-      if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+      if (input && document.activeElement !== input) {
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }
     } catch {
       state.suggestions = [];
       render();
     }
-  }, 160);
-}
-
-async function submitSearch(event) {
-  event.preventDefault();
-  const query = new FormData(event.currentTarget).get("query");
-  await searchStock(query);
+  }, 180);
 }
 
 async function searchStock(query) {
-  if (!query?.trim()) return;
+  if (!query || !query.trim()) return;
   state.loading = true;
   state.error = "";
-  state.query = query;
+  state.query = query.trim();
   state.suggestions = [];
   render();
   try {
-    const data = await api(`/api/search?q=${encodeURIComponent(query)}&tf=${state.chartTimeframe}`);
+    const data = await api("/api/search?q=" + encodeURIComponent(state.query) + "&tf=" + state.chartTimeframe);
     state.selectedStock = data.results[0];
-    addHistory(query, data.results[0]);
+    addHistory(state.query, data.results[0]);
     saveLocalState();
   } catch (error) {
     state.selectedStock = null;
@@ -502,9 +521,9 @@ async function changeTimeframe(tf) {
   state.chartTimeframe = tf;
   if (!state.selectedStock) { render(); return; }
   try {
-    const data = await api(`/api/search?q=${encodeURIComponent(state.selectedStock.ticker)}&tf=${tf}`);
-    state.selectedStock = data.results[0];
-  } catch { /* keep current stock, just re-render */ }
+    const data = await api("/api/search?q=" + encodeURIComponent(state.selectedStock.ticker) + "&tf=" + tf);
+    if (data.results && data.results[0]) state.selectedStock = data.results[0];
+  } catch { /* keep current stock */ }
   render();
 }
 
@@ -513,7 +532,7 @@ function addWatchlist() {
   if (state.watchlist.some((s) => s.ticker === state.selectedStock.ticker)) return;
   const plan = currentPlan();
   if (state.watchlist.length >= plan.watchlistLimit) {
-    state.error = `Limit erreicht: maximal ${plan.watchlistLimit} Watchlist-Eintraege.`;
+    state.error = "Limit erreicht: maximal " + plan.watchlistLimit + " Watchlist-Eintraege.";
     render();
     return;
   }
@@ -541,44 +560,48 @@ async function api(path, options = {}) {
 function drawChart(points) {
   const canvas = document.querySelector("#chart");
   const shell = document.querySelector(".chart-shell");
-  if (!canvas || !shell || !points?.length) return;
+  if (!canvas || !shell || !points || !points.length) return;
 
   const rect = shell.getBoundingClientRect();
   const ratio = window.devicePixelRatio || 1;
   const cssWidth = Math.max(320, rect.width);
-  const cssHeight = Math.max(280, rect.height);
+  const cssHeight = Math.max(260, rect.height);
   canvas.width = Math.floor(cssWidth * ratio);
   canvas.height = Math.floor(cssHeight * ratio);
-  canvas.style.width = `${cssWidth}px`;
-  canvas.style.height = `${cssHeight}px`;
+  canvas.style.width = cssWidth + "px";
+  canvas.style.height = cssHeight + "px";
 
   const ctx = canvas.getContext("2d");
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
   const w = cssWidth, h = cssHeight;
-  const pad = { top: 24, right: 18, bottom: 38, left: 60 };
-  const min = Math.min(...points), max = Math.max(...points);
+  const pad = { top: 24, right: 20, bottom: 38, left: 62 };
+  const min = Math.min.apply(null, points);
+  const max = Math.max.apply(null, points);
   const range = Math.max(1, max - min);
 
   ctx.fillStyle = "#0d131c";
   ctx.fillRect(0, 0, w, h);
 
   // Grid + Y-labels
-  ctx.strokeStyle = "rgba(148,163,184,.13)";
-  ctx.fillStyle = "rgba(148,163,184,.72)";
+  ctx.strokeStyle = "rgba(148,163,184,.12)";
+  ctx.fillStyle = "rgba(148,163,184,.65)";
   ctx.font = "11px Inter, system-ui, sans-serif";
   for (let i = 0; i <= 4; i++) {
     const y = pad.top + (i * (h - pad.top - pad.bottom)) / 4;
     const val = max - (i * range) / 4;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillText(val.toFixed(val > 100 ? 0 : 1), 6, y + 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(val > 100 ? val.toFixed(0) : val.toFixed(1), 6, y + 4);
   }
 
-  // X-axis labels per timeframe
+  // X-axis labels
   const xLabels = { "1W": ["Mo","Di","Mi","Do","Fr","Sa","So"], "1Y": ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"] };
   const labels = xLabels[state.chartTimeframe];
   if (labels) {
-    ctx.fillStyle = "rgba(148,163,184,.55)";
+    ctx.fillStyle = "rgba(148,163,184,.5)";
     ctx.font = "10px Inter, system-ui, sans-serif";
     labels.forEach((lbl, i) => {
       const x = pad.left + (i / (labels.length - 1)) * (w - pad.left - pad.right);
@@ -591,15 +614,14 @@ function drawChart(points) {
     y: h - pad.bottom - ((p - min) / range) * (h - pad.top - pad.bottom)
   }));
 
-  // Determine trend color
   const isUp = points[points.length - 1] >= points[0];
   const colorA = isUp ? "#22c55e" : "#fb7185";
   const colorB = isUp ? "#38bdf8" : "#f59e0b";
 
   // Area fill
   const area = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-  area.addColorStop(0, isUp ? "rgba(34,197,94,.22)" : "rgba(251,113,133,.18)");
-  area.addColorStop(1, "rgba(56,189,248,.01)");
+  area.addColorStop(0, isUp ? "rgba(34,197,94,.2)" : "rgba(251,113,133,.16)");
+  area.addColorStop(1, "rgba(13,19,28,.01)");
   ctx.beginPath();
   coords.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.lineTo(w - pad.right, h - pad.bottom);
@@ -619,12 +641,16 @@ function drawChart(points) {
   ctx.lineJoin = "round";
   ctx.stroke();
 
-  // Last price dot + label
-  const last = coords.at(-1);
+  // Last dot
+  const last = coords[coords.length - 1];
   ctx.fillStyle = colorA;
-  ctx.beginPath(); ctx.arc(last.x, last.y, 5, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "rgba(13,19,28,.8)";
-  ctx.beginPath(); ctx.arc(last.x, last.y, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#0d131c";
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 2.5, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 // ─── State helpers ────────────────────────────────────────────────────────────
@@ -639,7 +665,7 @@ function addHistory(query, stock) {
 }
 
 function currentPlan() {
-  return planRules[state.user?.plan === "pro" ? "pro" : "free"];
+  return planRules[state.user && state.user.plan === "pro" ? "pro" : "free"];
 }
 
 function loadLocalState() {
@@ -676,7 +702,7 @@ function formatMoney(value, currency) {
 }
 
 function formatSigned(value) {
-  return `${value >= 0 ? "+" : ""}${percent.format(value)}%`;
+  return (value >= 0 ? "+" : "") + percent.format(value) + "%";
 }
 
 function escapeHtml(value) {
