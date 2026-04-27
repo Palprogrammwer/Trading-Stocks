@@ -362,7 +362,7 @@ nav a.active { color: var(--text); background: var(--panel-2); }
 .chart-controls {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 .timeframe-btn {
@@ -370,11 +370,12 @@ nav a.active { color: var(--text); background: var(--panel-2); }
   border: 1px solid var(--line);
   color: var(--muted);
   border-radius: 6px;
-  padding: 0 10px;
-  min-height: 30px;
-  font-size: .78rem;
+  padding: 0 9px;
+  min-height: 28px;
+  font-size: .75rem;
   font-weight: 700;
   transition: background .12s, color .12s, border-color .12s;
+  white-space: nowrap;
 }
 .timeframe-btn:hover:not(:disabled) {
   background: rgba(56,189,248,.1);

@@ -1,7 +1,7 @@
 const { searchStocks, createQuote, findStock } = require("../lib/stocks");
 const { readJson, sendJson } = require("../lib/auth");
 
-const VALID_TIMEFRAMES = ["1W", "1M", "1Y", "MAX"];
+const VALID_TIMEFRAMES = ["1W", "1M", "3M", "6M", "1Y", "5Y", "MAX"];
 
 module.exports = async function search(req, res) {
   if (req.method !== "GET" && req.method !== "POST") {
@@ -25,9 +25,6 @@ module.exports = async function search(req, res) {
   if (!VALID_TIMEFRAMES.includes(timeframe)) timeframe = "1M";
 
   const results = searchStocks(query);
-  if (!results.length) {
-    return sendJson(res, 404, { error: "Keine passende Aktie gefunden.", results: [] });
-  }
 
   // If the query is a direct ticker match, rebuild chart for requested timeframe
   const directMatch = findStock(query);
@@ -36,5 +33,6 @@ module.exports = async function search(req, res) {
     results[0] = fullQuote;
   }
 
+  // Always return 200 with results array (may be empty)
   return sendJson(res, 200, { results });
 };

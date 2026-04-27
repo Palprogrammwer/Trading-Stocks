@@ -5,7 +5,7 @@ const planRules = {
   pro: { label: "Pro", watchlistLimit: 50, historyLimit: 30, proMetrics: true }
 };
 
-const TIMEFRAMES = ["1W", "1M", "1Y", "MAX"];
+const TIMEFRAMES = ["1W", "1M", "3M", "6M", "1Y", "5Y", "MAX"];
 
 const state = {
   user: null,
@@ -465,9 +465,10 @@ function handleAutocomplete(event) {
       const data = await api("/api/search?q=" + encodeURIComponent(value));
       // Boost history items to top
       const historyTickers = new Set(state.history.map((h) => h.ticker));
+      const results = data.results || [];
       state.suggestions = [
-        ...data.results.filter((s) => historyTickers.has(s.ticker)),
-        ...data.results.filter((s) => !historyTickers.has(s.ticker))
+        ...results.filter((s) => historyTickers.has(s.ticker)),
+        ...results.filter((s) => !historyTickers.has(s.ticker))
       ];
       render();
       // Restore focus without re-triggering input event
@@ -493,9 +494,15 @@ async function searchStock(query) {
   render();
   try {
     const data = await api("/api/search?q=" + encodeURIComponent(state.query) + "&tf=" + state.chartTimeframe);
-    state.selectedStock = data.results[0];
-    addHistory(state.query, data.results[0]);
-    saveLocalState();
+    const results = data.results || [];
+    if (results.length === 0) {
+      state.error = "Keine Aktie gefunden. Probiere einen anderen Namen oder Ticker.";
+      state.selectedStock = null;
+    } else {
+      state.selectedStock = results[0];
+      addHistory(state.query, results[0]);
+      saveLocalState();
+    }
   } catch (error) {
     state.selectedStock = null;
     state.error = error.message;
@@ -522,7 +529,8 @@ async function changeTimeframe(tf) {
   if (!state.selectedStock) { render(); return; }
   try {
     const data = await api("/api/search?q=" + encodeURIComponent(state.selectedStock.ticker) + "&tf=" + tf);
-    if (data.results && data.results[0]) state.selectedStock = data.results[0];
+    const results = data.results || [];
+    if (results.length > 0) state.selectedStock = results[0];
   } catch { /* keep current stock */ }
   render();
 }
@@ -598,7 +606,15 @@ function drawChart(points) {
   }
 
   // X-axis labels
-  const xLabels = { "1W": ["Mo","Di","Mi","Do","Fr","Sa","So"], "1Y": ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"] };
+  const xLabels = {
+    "1W": ["Mo","Di","Mi","Do","Fr","Sa","So"],
+    "1M": ["W1","W2","W3","W4"],
+    "3M": ["M1","M2","M3"],
+    "6M": ["M1","M2","M3","M4","M5","M6"],
+    "1Y": ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"],
+    "5Y": ["Y1","Y2","Y3","Y4","Y5"],
+    "MAX": ["2019","2020","2021","2022","2023","2024","2025"]
+  };
   const labels = xLabels[state.chartTimeframe];
   if (labels) {
     ctx.fillStyle = "rgba(148,163,184,.5)";

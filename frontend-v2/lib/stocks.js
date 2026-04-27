@@ -479,11 +479,362 @@ const stocks = [
     sector: "Automotive",
     industry: "Luxury Automobiles",
     description: "Premiumautomobilhersteller mit starker E-Mobilitaetsstrategie und globaler Markenstaerke."
+  },
+  {
+    ticker: "RHHBY",
+    name: "Roche Holding AG",
+    aliases: ["roche", "roche holding"],
+    exchange: "NASDAQ",
+    country: "Schweiz",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/roche.com",
+    logoDomain: "roche.com",
+    sector: "Healthcare",
+    industry: "Pharmaceuticals / Diagnostics",
+    description: "Schweizer Pharma- und Diagnostikkonzern mit starker Onkologie-Pipeline und In-vitro-Diagnostik."
+  },
+  {
+    ticker: "NOVN",
+    name: "Novartis AG",
+    aliases: ["novartis", "novartis ag"],
+    exchange: "NASDAQ",
+    country: "Schweiz",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/novartis.com",
+    logoDomain: "novartis.com",
+    sector: "Healthcare",
+    industry: "Pharmaceuticals",
+    description: "Schweizer Pharmakonzern mit diversifiziertem Portfolio in Onkologie, Kardiologie und Augenheilkunde."
+  },
+  {
+    ticker: "NESN",
+    name: "Nestle SA",
+    aliases: ["nestle", "nestle sa"],
+    exchange: "NASDAQ",
+    country: "Schweiz",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/nestle.com",
+    logoDomain: "nestle.com",
+    sector: "Consumer Staples",
+    industry: "Food & Beverage",
+    description: "Weltgroesster Lebensmittelkonzern mit starken Marken in Kaffee, Wasser und Ernaehrung."
+  },
+  {
+    ticker: "LRCX",
+    name: "Lam Research Corp.",
+    aliases: ["lam research", "lam"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/lamresearch.com",
+    logoDomain: "lamresearch.com",
+    sector: "Semiconductors",
+    industry: "Chip Equipment",
+    description: "Ausruestungshersteller fuer Halbleiter-Fertigung mit Fokus auf Aetzmaschinen und Prozessoptimierung."
+  },
+  {
+    ticker: "QCOM",
+    name: "Qualcomm Inc.",
+    aliases: ["qualcomm", "qualcomm inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/qualcomm.com",
+    logoDomain: "qualcomm.com",
+    sector: "Semiconductors",
+    industry: "Mobile / Wireless",
+    description: "Halbleiter- und Lizenzunternehmen mit fuehrender Position in Mobilfunk und 5G-Technologie."
+  },
+  {
+    ticker: "BROADCOM",
+    name: "Broadcom Inc.",
+    aliases: ["broadcom", "broadcom inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/broadcom.com",
+    logoDomain: "broadcom.com",
+    sector: "Semiconductors",
+    industry: "Infrastructure / Wireless",
+    description: "Infrastruktur-Halbleiterhersteller mit Fokus auf Netzwerk, Breitband und Wireless-Technologie."
+  },
+  {
+    ticker: "AVGO",
+    name: "Broadcom Inc. (Alt)",
+    aliases: ["avago", "avago technologies"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/broadcom.com",
+    logoDomain: "broadcom.com",
+    sector: "Semiconductors",
+    industry: "Infrastructure",
+    description: "Halbleiterhersteller mit Fokus auf Infrastruktur und Wireless-Technologien."
+  },
+  {
+    ticker: "MRVL",
+    name: "Marvell Technology Inc.",
+    aliases: ["marvell", "marvell technology"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/marvell.com",
+    logoDomain: "marvell.com",
+    sector: "Semiconductors",
+    industry: "Data Infrastructure",
+    description: "Halbleiterhersteller mit Fokus auf Datenzentren, Cloud und Speicher-Infrastruktur."
+  },
+  {
+    ticker: "SNPS",
+    name: "Synopsys Inc.",
+    aliases: ["synopsys", "synopsys inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/synopsys.com",
+    logoDomain: "synopsys.com",
+    sector: "Technology",
+    industry: "EDA / Semiconductor Design",
+    description: "EDA-Softwareanbieter fuer Chip-Design mit fuehrender Position in Verifikation und Simulation."
+  },
+  {
+    ticker: "CDNS",
+    name: "Cadence Design Systems",
+    aliases: ["cadence", "cadence design"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/cadence.com",
+    logoDomain: "cadence.com",
+    sector: "Technology",
+    industry: "EDA / Semiconductor Design",
+    description: "EDA-Softwareanbieter mit Fokus auf Chip-Design, Simulation und Verifikation."
+  },
+  {
+    ticker: "KLAC",
+    name: "KLA Corp.",
+    aliases: ["kla", "kla corporation"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/kla.com",
+    logoDomain: "kla.com",
+    sector: "Semiconductors",
+    industry: "Process Control",
+    description: "Ausruestungshersteller fuer Halbleiter-Fertigung mit Fokus auf Inspektions- und Messtechnik."
+  },
+  {
+    ticker: "AMAT",
+    name: "Applied Materials Inc.",
+    aliases: ["applied materials", "amat"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/appliedmaterials.com",
+    logoDomain: "appliedmaterials.com",
+    sector: "Semiconductors",
+    industry: "Chip Equipment",
+    description: "Weltgroesster Halbleiter-Ausruestungshersteller mit Fokus auf Depositions- und Aetzmaschinen."
+  },
+  {
+    ticker: "CSCO",
+    name: "Cisco Systems Inc.",
+    aliases: ["cisco", "cisco systems"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/cisco.com",
+    logoDomain: "cisco.com",
+    sector: "Technology",
+    industry: "Networking",
+    description: "Netzwerk-Ausruestungshersteller mit Fokus auf Router, Switches und Cybersecurity."
+  },
+  {
+    ticker: "ORCL",
+    name: "Oracle Corp.",
+    aliases: ["oracle", "oracle corporation"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/oracle.com",
+    logoDomain: "oracle.com",
+    sector: "Technology",
+    industry: "Enterprise Software / Cloud",
+    description: "Enterprise-Softwarekonzern mit Datenbank-, Cloud- und Unternehmensanwendungen."
+  },
+  {
+    ticker: "IBM",
+    name: "International Business Machines",
+    aliases: ["ibm", "international business machines"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/ibm.com",
+    logoDomain: "ibm.com",
+    sector: "Technology",
+    industry: "IT Services / Cloud",
+    description: "IT-Dienstleistungskonzern mit Fokus auf Cloud, KI, Hybrid-Infrastruktur und Consulting."
+  },
+  {
+    ticker: "INTU",
+    name: "Intuit Inc.",
+    aliases: ["intuit", "intuit inc", "quickbooks"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/intuit.com",
+    logoDomain: "intuit.com",
+    sector: "Technology",
+    industry: "Financial Software",
+    description: "Finanzsoftware-Anbieter mit QuickBooks, TurboTax und Credit Karma fuer KMU und Privatpersonen."
+  },
+  {
+    ticker: "TEAM",
+    name: "Atlassian Corp.",
+    aliases: ["atlassian", "atlassian corp", "jira"],
+    exchange: "NASDAQ",
+    country: "Australien",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/atlassian.com",
+    logoDomain: "atlassian.com",
+    sector: "Technology",
+    industry: "Developer Tools / Collaboration",
+    description: "Softwareentwicklungs-Plattform mit Jira, Confluence und Bitbucket fuer Agile Teams."
+  },
+  {
+    ticker: "DDOG",
+    name: "Datadog Inc.",
+    aliases: ["datadog", "datadog inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/datadoghq.com",
+    logoDomain: "datadoghq.com",
+    sector: "Technology",
+    industry: "Cloud Monitoring",
+    description: "Cloud-Monitoring- und Observability-Plattform fuer Infrastruktur, Apps und Logs."
+  },
+  {
+    ticker: "CRWD",
+    name: "CrowdStrike Holdings",
+    aliases: ["crowdstrike", "crowdstrike holdings"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/crowdstrike.com",
+    logoDomain: "crowdstrike.com",
+    sector: "Technology",
+    industry: "Cybersecurity",
+    description: "Cloud-native Cybersecurity-Plattform mit Endpoint Protection und Threat Intelligence."
+  },
+  {
+    ticker: "PALO",
+    name: "Palo Alto Networks",
+    aliases: ["palo alto", "palo alto networks"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/paloaltonetworks.com",
+    logoDomain: "paloaltonetworks.com",
+    sector: "Technology",
+    industry: "Cybersecurity",
+    description: "Cybersecurity-Plattform mit Firewalls, Cloud-Sicherheit und Threat-Management."
+  },
+  {
+    ticker: "ZM",
+    name: "Zoom Video Communications",
+    aliases: ["zoom", "zoom video"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/zoom.us",
+    logoDomain: "zoom.us",
+    sector: "Technology",
+    industry: "Communication / Collaboration",
+    description: "Video-Kommunikationsplattform mit Meetings, Webinare und Chat fuer Unternehmen."
+  },
+  {
+    ticker: "OKTA",
+    name: "Okta Inc.",
+    aliases: ["okta", "okta inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/okta.com",
+    logoDomain: "okta.com",
+    sector: "Technology",
+    industry: "Identity & Access",
+    description: "Identity- und Access-Management-Plattform fuer Unternehmen und Entwickler."
+  },
+  {
+    ticker: "TWLO",
+    name: "Twilio Inc.",
+    aliases: ["twilio", "twilio inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/twilio.com",
+    logoDomain: "twilio.com",
+    sector: "Technology",
+    industry: "Communication APIs",
+    description: "Cloud-Kommunikations-API-Plattform fuer SMS, Voice und Video-Integrationen."
+  },
+  {
+    ticker: "SNOW",
+    name: "Snowflake Inc.",
+    aliases: ["snowflake", "snowflake inc"],
+    exchange: "NYSE",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/snowflake.com",
+    logoDomain: "snowflake.com",
+    sector: "Technology",
+    industry: "Cloud Data Platform",
+    description: "Cloud-Datenlagerungsplattform mit SQL-Engine fuer Analytics und Data Sharing."
+  },
+  {
+    ticker: "DOMO",
+    name: "Domo Inc.",
+    aliases: ["domo", "domo inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/domo.com",
+    logoDomain: "domo.com",
+    sector: "Technology",
+    industry: "Business Intelligence",
+    description: "Business-Intelligence- und Analytics-Plattform fuer Echtzeit-Dashboards und Insights."
+  },
+  {
+    ticker: "TABLEAU",
+    name: "Tableau Software (Salesforce)",
+    aliases: ["tableau", "tableau software"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/tableau.com",
+    logoDomain: "tableau.com",
+    sector: "Technology",
+    industry: "Business Intelligence",
+    description: "Datenvisualisierungs- und Analytics-Plattform, jetzt Teil von Salesforce."
+  },
+  {
+    ticker: "SPLK",
+    name: "Splunk Inc.",
+    aliases: ["splunk", "splunk inc"],
+    exchange: "NASDAQ",
+    country: "USA",
+    currency: "USD",
+    logo: "https://logo.clearbit.com/splunk.com",
+    logoDomain: "splunk.com",
+    sector: "Technology",
+    industry: "Data Analytics / Observability",
+    description: "Datenanalyse-Plattform fuer Logs, Metriken und Security-Daten aus Infrastruktur und Apps."
   }
 ];
 
 // Chart data lengths per timeframe
-const TIMEFRAME_LENGTHS = { "1W": 7, "1M": 30, "1Y": 252, "MAX": 756 };
+const TIMEFRAME_LENGTHS = { "1W": 7, "1M": 30, "3M": 63, "6M": 126, "1Y": 252, "5Y": 1260, "MAX": 2520 };
 
 function searchStocks(query) {
   const normalized = normalize(query);
@@ -561,8 +912,8 @@ function analyze(metrics) {
 }
 
 function buildChart(ticker, price, length, timeframe = "1M") {
-  const driftScale = { "1W": 0.1, "1M": 0.5, "1Y": 2.0, "MAX": 4.0 }[timeframe] || 0.5;
-  const noiseScale = { "1W": 0.008, "1M": 0.017, "1Y": 0.022, "MAX": 0.028 }[timeframe] || 0.017;
+  const driftScale = { "1W": 0.1, "1M": 0.5, "3M": 1.0, "6M": 1.5, "1Y": 2.0, "5Y": 3.5, "MAX": 4.0 }[timeframe] || 0.5;
+  const noiseScale = { "1W": 0.008, "1M": 0.017, "3M": 0.018, "6M": 0.020, "1Y": 0.022, "5Y": 0.025, "MAX": 0.028 }[timeframe] || 0.017;
 
   return Array.from({ length }, (_, index) => {
     const wave = Math.sin(index / Math.max(4, length / 12)) * price * 0.032;
